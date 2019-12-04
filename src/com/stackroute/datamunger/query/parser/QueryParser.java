@@ -4,154 +4,156 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+/*There are total 4 DataMungerTest file:
+ * 
+ * 1)DataMungerTestTask1.java file is for testing following 4 methods
+ * a)getBaseQuery()  b)getFileName()  c)getOrderByClause()  d)getGroupByFields()
+ * 
+ * Once you implement the above 4 methods,run DataMungerTestTask1.java
+ * 
+ * 2)DataMungerTestTask2.java file is for testing following 2 methods
+ * a)getFields() b) getAggregateFunctions()
+ * 
+ * Once you implement the above 2 methods,run DataMungerTestTask2.java
+ * 
+ * 3)DataMungerTestTask3.java file is for testing following 2 methods
+ * a)getRestrictions()  b)getLogicalOperators()
+ * 
+ * Once you implement the above 2 methods,run DataMungerTestTask3.java
+ * 
+ * Once you implement all the methods run DataMungerTest.java.This test case consist of all
+ * the test cases together.
+ */
+
 public class QueryParser {
 
-	
-	
-	final private QueryParameter queryParameter = new QueryParameter();
-	
-	private static final String GROUP= "group";
-	private static final String ORDER= "order";
-	private static final String GRORBY= "by";
-	private static final String WHERE= "where";
-	private static final String REGW="[\\W]+";
+	private QueryParameter queryParameter = new QueryParameter();
+
 	/*
 	 * This method will parse the queryString and will return the object of
 	 * QueryParameter class
 	 */
 	public QueryParameter parseQuery(String queryString) {
-		
-		queryParameter.setBaseQuery(getBaseQuery(queryString));
-		queryParameter.setFileName(getFileName(queryString));
-		queryParameter.setOrderByFields(getOrderByFields(queryString));
-		queryParameter.setGroupByFields(getGroupByFields(queryString));
-		queryParameter.setFields(getFields(queryString));
-		queryParameter.setLogicalOperators(getLogicalOperators(queryString));
-		queryParameter.setAggregateFunctions(getAggregateFunctions(queryString));
-		queryParameter.setRestrictions(getRestrictions(queryString));
-		
-		return queryParameter;		
+		queryParameter.setFileName(extractFileName(queryString));
+		queryParameter.setBaseQuery(extractBaseQuery(queryString));
+		queryParameter.setGetOrderBy(extractOrderByFields(queryString));
+		queryParameter.setGetGroupBy(extractGroupByFields(queryString));
+		queryParameter.setGetField(extractFields(queryString));
+		queryParameter.setGetLogical(extractLogicalOperators(queryString));
+		queryParameter.setGetAggregateFunction(extractAggregate(queryString));
+		queryParameter.setGetConditions(extractConditions(queryString));
+		return queryParameter;
 	}
-	
-	
-	/*
-	 * Splitting the strings to parts
-	 * @param queryString
-	 * @return
-	 */
-	
-	public String[] getSplitStrings(final String queryString) {
-		final String queryLowerCase=queryString.toLowerCase(Locale.ENGLISH);
-		return queryLowerCase.split(" ");
-	}
-	
+
 	/*
 	 * Extract the name of the file from the query. File name can be found after the
 	 * "from" clause.
-	 * @param queryString
-	 * @return
 	 */
-	public String getFileName(final String queryString) {
-		final StringBuffer output = new StringBuffer();
-		final String [] query = this.getSplitStrings(queryString);
-		for(int i=0;i<query.length;i++) {
-			if(query[i].endsWith(".csv")){
-				output.append(query[i]);
-			}	
-		}
-		return output.toString();
-	}
 	
+	public String extractFileName(String queryString) {
+		queryString = queryString.toLowerCase(Locale.US);
+		final String file = queryString;
+		final int indexOffrom = file.indexOf("from");
+		final int indexOfcsv = file.indexOf("csv");
+		final String filename = file.substring(indexOffrom + 5, indexOfcsv + 3);
+		return queryParameter.setFileName(filename);
+	}
+
 	/*
+	 * 
 	 * Extract the baseQuery from the query.This method is used to extract the
 	 * baseQuery from the query string. BaseQuery contains from the beginning of the
 	 * query till the where clause
-	 * @param queryString
-	 * @return
 	 */
 	
-	public String getBaseQuery(final String queryString) {
-		final StringBuffer output = new StringBuffer();
-		final String [] query = this.getSplitStrings(queryString);
-		for(int i=0;i<query.length;i++) {
-			if(query[i].equals(WHERE) || query[i].equals(GROUP) || query[i].equals(ORDER) && query[i+1].equals(GRORBY)){
-				break;
-			}
-			output.append(query[i]);
-			output.append(' ');
+	public String extractBaseQuery(String queryString) {
+		String base = null;
+		queryString = queryString.toLowerCase(Locale.US);
+		if (queryString.contains("where")) {
+			final String[] baseQuery = queryString.split(" where");
+			base = baseQuery[0];
+		} else if (queryString.contains("group by")) {
+			final String[] baseQuery = queryString.split(" group by");
+			base = baseQuery[0];
+		} else if (queryString.contains("order by")) {
+			final String[] baseQuery = queryString.split(" order by");
+			base = baseQuery[0];
+		} else {
+			base = "";
 		}
-		return output.toString().trim();
+		return base;
 	}
-	
+
 	/*
 	 * extract the order by fields from the query string. Please note that we will
 	 * need to extract the field(s) after "order by" clause in the query, if at all
 	 * the order by clause exists. For eg: select city,winner,team1,team2 from
 	 * data/ipl.csv order by city from the query mentioned above, we need to extract
 	 * "city". Please note that we can have more than one order by fields.
-	 * @param queryString
-	 * @return
 	 */
-	
-	public List<String> getOrderByFields(final String queryString) {
-		final StringBuffer output = new StringBuffer();
-		String[] result=null;
-		List<String> liresult=new ArrayList<String>();
-		final String [] query = this.getSplitStrings(queryString);
-		for(int i=0;i<query.length;i++) {
-			if(query[i].equals(ORDER) && query[i+1].equals(GRORBY)) {
-				for(int j=i+2;j<query.length;j++) {
-					if(query[j].contains(";")) {
-						break;
-					}
-					output.append(query[j]);
-					output.append(' ');
-				}
-				result= output.toString().trim().split(" |,");
-				for (String string : result) {
-					liresult.add(string);
+	public List<String> extractOrderByFields(String queryString) {
+		List<String> orderByFields = null;
+		String[] tempArray;
+		if (queryString.contains("order by")) {
+			orderByFields = new ArrayList<String>();
+			tempArray = queryString.trim().split(" order by ");
+			final String[] orderByArray = tempArray[1].trim().split(",");
+			if (orderByArray.length == 1) {
+				orderByFields.add(orderByArray[0]);
+			} else {
+				for (int i = 0; i < orderByArray.length; i++) {
+					orderByFields.add(orderByArray[i]);
 				}
 			}
 		}
-		return liresult;
+		return orderByFields;
+
 	}
-	
-	
+
 	/*
 	 * Extract the group by fields from the query string. Please note that we will
 	 * need to extract the field(s) after "group by" clause in the query, if at all
 	 * the group by clause exists. For eg: select city,max(win_by_runs) from
 	 * data/ipl.csv group by city from the query mentioned above, we need to extract
 	 * "city". Please note that we can have more than one group by fields.
-	 * @param queryString
-	 * @return
 	 */
-	
-	public List<String> getGroupByFields(final String queryString) {
-		final StringBuffer output = new StringBuffer();
-		String result[]=null;
-		List<String> liresult=null;
-		final String [] query = this.getSplitStrings(queryString);
-		for(int i=0;i<query.length;i++) {
-			if(query[i].equals(GROUP) && query[i+1].equals(GRORBY)) {
-				for(int j=i+2;j<query.length;j++) {
-					if(query[j].contains(";") || (query[j].contains(ORDER) && query[j+1].contains(GRORBY))) {
-						break;
+	public List<String> extractGroupByFields(String queryString) {
+		String[] groupTempArray;
+		String[] groupByArray;
+		List<String> groupByFields = null;
+
+		if (queryString.contains("group by")) {
+			groupByFields = new ArrayList<String>();
+			groupTempArray = queryString.trim().split(" group by ");
+			if (groupTempArray[1].contains("order by")) {
+				final String[] groupOrderBySplit = groupTempArray[1].trim().split(" order by");
+				groupByArray = groupOrderBySplit[0].trim().split(",");
+				if (groupByArray.length == 1) {
+					groupByFields.add(groupByArray[0]);
+				} else {
+					for (int i = 0; i < groupByArray.length; i++) {
+						groupByFields.add(groupByArray[i]);
 					}
-					output.append(query[j]);
-					output.append(' ');
 				}
-				result= output.toString().trim().split(" |,");
-				liresult=new ArrayList<String>();
-				for (String string : result) {
-					liresult.add(string);
+			}
+
+			else {
+				groupByArray = groupTempArray[1].trim().split(",");
+				if (groupByArray.length == 1) {
+					groupByFields.add(groupByArray[0]);
+				}
+
+				else {
+					for (int i = 0; i < groupByArray.length; i++) {
+						groupByFields.add(groupByArray[i]);
+					}
 				}
 			}
 		}
-		return liresult;
+		return groupByFields;
+
 	}
-	
-	
+
 	/*
 	 * Extract the selected fields from the query string. Please note that we will
 	 * need to extract the field(s) after "select" clause followed by a space from
@@ -159,31 +161,21 @@ public class QueryParser {
 	 * query mentioned above, we need to extract "city" and "win_by_runs". Please
 	 * note that we might have a field containing name "from_date" or "from_hrs".
 	 * Hence, consider this while parsing.
-	 * @param queryString
-	 * @return
 	 */
-	
-	public List<String> getFields(final String queryString) {
-		final StringBuffer output = new StringBuffer();
-		String result[]=null;
-		final String [] query = this.getBaseQuery(queryString).split(" ");
-		List<String> liresult=new ArrayList<String>();
-		for(int i=0;i<query.length;i++) {
-			if(query[i].contains("select")){
-				continue;
-			}
-			else if(query[i].contains("from")){
-				break;
-			}
-			output.append(query[i]);
+	public List<String> extractFields(String queryString) {
+		final List<String> field = new ArrayList<String>();
+		final String file1 = queryString;
+		final int indexOfselect = file1.indexOf("select ");
+		final int indexOffrom1 = file1.indexOf(" from");
+		String filename1 = file1.substring(indexOfselect + 7, indexOffrom1);
+		// return filename;
+		final String[] fields = filename1.split(",");
+		for (int i = 0; i < fields.length; i++) {
+			field.add(fields[i]);
 		}
-		result=output.toString().trim().split(",");
-		for (String string : result) {
-			liresult.add(string);
-		}
-		return liresult;
+		return field;
 	}
-	
+
 	/*
 	 * Extract the conditions from the query string(if exists). for each condition,
 	 * we need to capture the following: 1. Name of field 2. condition 3. value
@@ -196,71 +188,55 @@ public class QueryParser {
 	 * 
 	 * the query might contain multiple conditions separated by OR/AND operators.
 	 * Please consider this while parsing the conditions.
-	 * @param queryString
-	 * @return
+	 * 
 	 */
+	public List<Restriction> extractConditions(String queryString) {
+		List<Restriction> conditions = null;
+		// queryString = queryString.toLowerCase();
+		String[] whereQuery;
+		// List<String> Cond = new ArrayList<String>();
+		String tempString;
+		String[] conditionQuery;
+		String[] getCondition = null;
+		if (queryString.contains("where")) {
+			conditions = new ArrayList<Restriction>();
+			whereQuery = queryString.trim().split("where ");
+			if (whereQuery[1].contains("group by")) {
+				conditionQuery = whereQuery[1].trim().split("group by");
+				tempString = conditionQuery[0];
+			} else if (whereQuery[1].contains("order by")) {
+				conditionQuery = whereQuery[1].trim().split("order by");
+				tempString = conditionQuery[0];
+			} else {
+				tempString = whereQuery[1];
+			}
+			getCondition = tempString.trim().split(" and | or ");
+			// for (String s : getCondition) {
+			// System.out.println(s.trim());
+			// }
+			String[] condSplit = null;
+			if (getCondition != null) {
+				for (int i = 0; i < getCondition.length; i++) {
+					if (getCondition[i].contains("=")) {
+						condSplit = getCondition[i].trim().split("\\W+");
+						conditions.add(new Restriction(condSplit[0], condSplit[1], "="));
+					} else if (getCondition[i].contains(">")) {
+						condSplit = getCondition[i].trim().split("\\W+");
+						conditions.add(new Restriction(condSplit[0], condSplit[1], ">"));
+					} else if (getCondition[i].contains("<")) {
+						condSplit = getCondition[i].trim().split("\\W+");
+						conditions.add(new Restriction(condSplit[0], condSplit[1], "<"));
+					}
 
-	public List<Restriction> getRestrictions(final String queryString) {
-		final String [] query = queryString.split(" ");
-		final StringBuffer output = new StringBuffer();
-		List<Restriction> liresult=null;
-		String result[]=null;
-		if(queryString.contains(" where ")) {
-			for(int i=0;i<query.length;i++) {
-				if(query[i].contains(WHERE)){
-					for(int j=i+1;j<query.length;j++) {
-						if(query[j].equals(ORDER) || query[j].equals(GROUP) && query[j+1].equals(GRORBY)) {
-							break;
-						}
-						output.append(query[j]);
-						output.append(' ');
-					}
-					break;
 				}
 			}
-			result= output.toString().trim().split(" and | or |;");
-			if(result!=null) {
-				liresult=new ArrayList<Restriction>();
-				for(int i=0;i<result.length;i++) {
-					if(result[i].contains(">=")) {
-						String[] res = result[i].split(REGW);
-						Restriction restriction = new Restriction(res[0].trim(),res[1].trim(),">=");
-						liresult.add(restriction);
-					}
-					else if(result[i].contains("<=")) {
-						String[] res = result[i].split(REGW);
-						Restriction restriction = new Restriction(res[0].trim(),res[1].trim(),"<=");
-						liresult.add(restriction);
-					}
-					else if(result[i].contains(">")) {
-						String[] res = result[i].split(REGW);
-						Restriction restriction = new Restriction(res[0].trim(),res[1].trim(),">");
-						liresult.add(restriction);
-					}
-					else if(result[i].contains("<")) {
-						String[] res = result[i].split(REGW);
-						Restriction restriction = new Restriction(res[0].trim(),res[1].trim(),"<");
-						liresult.add(restriction);
-					}
-					else if(result[i].contains("!=")) {
-						String[] res = result[i].split(REGW);
-						Restriction restriction = new Restriction(res[0].trim(),res[1].trim(),"!=");
-						liresult.add(restriction);
-					}
-					else if(result[i].contains("=")) {
-						String[] res = result[i].split(REGW);
-						Restriction restriction = new Restriction(res[0].trim(),res[1].trim(),"=");
-						liresult.add(restriction);
-					}
-					
-				}
-			}
+			// Conditions.add(new Restriction(getCondition[0].substring(0, 6),
+			// getCondition[0].substring(9, 12), getCondition[0].substring(7, 8)));
+
 		}
-		
-		return liresult;
+		return conditions;
 
 	}
-	
 	/*
 	 * Extract the logical operators(AND/OR) from the query, if at all it is
 	 * present. For eg: select city,winner,team1,team2,player_of_match from
@@ -269,40 +245,31 @@ public class QueryParser {
 	 * 
 	 * The query mentioned above in the example should return a List of Strings
 	 * containing [or,and]
-	 * @param queryString
-	 * @return
 	 */
-	
-	public List<String> getLogicalOperators(final String queryString) {
-		final String [] query = this.getSplitStrings(queryString);
-		final StringBuffer output= new StringBuffer();
-		String result[]=null;
-		List<String> liresult=null;
-		if(queryString.contains(" and ") || queryString.contains(" or ") && queryString.contains(" where ")) {
-			for(int i=0;i<query.length;i++) {
-				if(query[i].contains(WHERE)){
-					for(int j=i+1;j<query.length;j++) {
-						if(query[j].equals(ORDER) || query[j].equals(GROUP) && query[j+1].equals(GRORBY)){
-							break;
-						}
-						if(query[j].equals("and") || query[j].equals("or")) {
-							output.append(query[j]);
-							output.append(' ');
-						}
-					}
-					liresult=new ArrayList<String>();
-					result= output.toString().split(" ");
-					for (String string : result) {
-						liresult.add(string);
-					}
-					break;
+
+	public List<String> extractLogicalOperators(String queryString) {
+		List<String> logical = null;
+		final String[] query = queryString.split(" ");
+		String getLogic = "";
+		String[] logicTemp;
+		if (queryString.contains("where ")) {
+			logical = new ArrayList<String>();
+			for (int i = 0; i < query.length; i++) {
+				if (query[i].matches("and|or|not")) {
+
+					getLogic += query[i] + " ";
 				}
 			}
+			logicTemp = getLogic.toString().split(" ");
+			for (int i = 0; i < logicTemp.length; i++) {
+				logical.add(logicTemp[i]);
+			}
 		}
-		return liresult;
+
+		return logical;
+
 	}
 
-	
 	/*
 	 * Extract the aggregate functions from the query. The presence of the aggregate
 	 * functions can determined if we have either "min" or "max" or "sum" or "count"
@@ -313,38 +280,38 @@ public class QueryParser {
 	 * being applied.
 	 * 
 	 * Please note that more than one aggregate function can be present in a query.
-	 * @param queryString
-	 * @return
+	 * 
 	 * 
 	 */
-	
-	public List<AggregateFunction> getAggregateFunctions(final String queryString) {
-		final StringBuffer output = new StringBuffer();
-		String result[]=null;
-		final String [] query = this.getBaseQuery(queryString).split(" ");
-		List<AggregateFunction> liresult=new ArrayList<AggregateFunction>();
-		for(int i=0;i<query.length;i++) {
-			if(query[i].contains("select")){
-				continue;
+	public List<AggregateFunction> extractAggregate(String queryString) {
+		// queryString = queryString.toLowerCase();
+		final List<AggregateFunction> aggregate = new ArrayList<AggregateFunction>();
+		// boolean state = false;
+		// String getAggregate = "";
+		final int selectIndex = queryString.toLowerCase(Locale.US).indexOf("select");
+		final int fromIndex = queryString.toLowerCase(Locale.US).indexOf(" from");
+		final String query = queryString.toLowerCase(Locale.US).substring(selectIndex + 7, fromIndex);
+		String[] aggQuery = null;
+		aggQuery = query.split(",");
+		for (int i = 0; i < aggQuery.length; i++) {
+			if (aggQuery[i].startsWith("max(") && aggQuery[i].endsWith(")")
+					|| aggQuery[i].startsWith("min(") && aggQuery[i].endsWith(")")
+					|| aggQuery[i].startsWith("avg(") && aggQuery[i].endsWith(")")
+					|| aggQuery[i].startsWith("sum") && aggQuery[i].endsWith(")")) {
+				aggregate.add(new AggregateFunction(aggQuery[i].substring(4, aggQuery[i].length() - 1),
+						aggQuery[i].substring(0, 3)));
+				// getAggregate += aggQuery[i] + " ";
+				// state = true;
+			} else if (aggQuery[i].startsWith("count(") && aggQuery[i].endsWith(")")) {
+				aggregate.add(new AggregateFunction(aggQuery[i].substring(6, aggQuery[i].length() - 1),
+						aggQuery[i].substring(0, 5)));
+				// } else {
+				// Aggregate = null;
+				// }
 			}
-			else if(query[i].contains("from")){
-				break;
-			}
-			output.append(query[i]);
+
 		}
-		result=output.toString().trim().split(",");
-		
-		if(!result[0].equals("*")) {
-			for(int i=0;i<result.length;i++) {
-				if(result[i].startsWith("max(")  || result[i].startsWith("min(") ||  result[i].startsWith("count(") || result[i].startsWith("avg(") || result[i].startsWith("sum") && result[i].endsWith(")")) {
-					String sep[]=result[i].split("[)|(]");
-					AggregateFunction aggregateFunction = new AggregateFunction(sep[1],sep[0]);
-					liresult.add(aggregateFunction);
-				}			
-			}
-		}
-		return liresult;
+		return aggregate;
+
 	}
-	
-	
 }

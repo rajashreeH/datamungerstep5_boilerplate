@@ -3,49 +3,31 @@ package com.stackroute.datamunger.query.parser;
 /*
  * This class is used for storing name of field, condition and value for 
  * each conditions
+ * generate getter and setter for this class,
+ * Also override toString method
  * */
-public class Restriction {
 
-	private String propertyName;
-	private String propertyValue;
-	private String condition;
+public class Restriction {
+	private String fieldName, fieldCondition, fieldValue;
+
 	// Write logic for constructor
-	
-	public Restriction() {
-		
+	public Restriction(String name, String value, String condition) {
+		this.fieldName = name;
+		this.fieldCondition = condition;
+		this.fieldValue = value;
 	}
-	
-	public Restriction(final String name, final String value, final String condition) {
-		this.propertyName=name;
-		this.propertyValue=value;
-		this.condition=condition;
+
+	public String getRestriction() {
+		return this.toString();
 	}
-	public String getPropertyName() {
-		return  propertyName;
+
+	public void setRestriction(String name, String value, String condition) {
+		this.fieldName = name;
+		this.fieldCondition = condition;
+		this.fieldValue = value;
 	}
-	
-	public String getPropertyValue() {
-		return propertyValue;
-	}
-	
-	public String getCondition() {
-		return condition;
-	}
-	
-	public void setPropertyName(final String name) {
-		this.propertyName=name;
-	}
-	
-	public void setPropertyValue(final String value) {
-		this.propertyValue=value;
-	}
-	
-	public void setCondition(final String condition) {
-		this.condition=condition;
-	}
-	
 	public String toString() {
-		return propertyName+" "+condition+" "+propertyValue; 
+		return this.fieldName+" "+this.fieldValue+" "+this.fieldCondition;
 	}
 	
 
