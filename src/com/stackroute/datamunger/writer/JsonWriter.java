@@ -1,8 +1,5 @@
 package com.stackroute.datamunger.writer;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.Map;
 
 import com.google.gson.Gson;
@@ -21,30 +18,19 @@ public class JsonWriter {
 		 */
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
 		String result = gson.toJson(resultSet);
-		Boolean fileWritten=false;
 
 		/*
 		 * write JSON string to data/result.json file. As we are performing File IO,
 		 * consider handling exception
 		 */
-		 FileWriter fileWriter;
-			try {
-				fileWriter = new FileWriter("data/result.json");
-				fileWriter.write(result);    
-				fileWriter.close();
-		         fileWritten=true;
-			} catch (IOException e) {
-				
-				e.printStackTrace();
-				fileWritten=false;
-			} 
+
 		/* return true if file writing is successful */
 
 		/* return false if file writing is failed */
 
 		/* close BufferedWriter object */
 
-		return fileWritten;
+		return false;
 	}
 
 }

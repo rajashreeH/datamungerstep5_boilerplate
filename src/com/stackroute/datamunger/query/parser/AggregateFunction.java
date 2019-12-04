@@ -5,35 +5,14 @@ package com.stackroute.datamunger.query.parser;
  * */
 public class AggregateFunction {
 
-	private String field; 
-    private int result;
-    private String function;
-    private int aggregateFieldIndex;
-    
-    
-	public String getField() {
-		return field;
-	}
-	public void setField(String field) {
-		this.field = field;
-	}
-	public int getResult() {
-		return result;
-	}
-	public void setResult(int result) {
-		this.result = result;
-	}
 	public String getFunction() {
-		return function;
+		// TODO Auto-generated method stub
+		return null;
 	}
-	public void setFunction(String function) {
-		this.function = function;
-	}
-	public int getAggregateFieldIndex() {
-		return aggregateFieldIndex;
-	}
-	public void setAggregateFieldIndex(int aggregateFieldIndex) {
-		this.aggregateFieldIndex = aggregateFieldIndex;
+
+	public String getField() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 	
