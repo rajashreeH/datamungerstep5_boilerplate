@@ -1,8 +1,7 @@
 package com.stackroute.datamunger.query.parser;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-
 /* 
  * This class will contain the elements of the parsed Query String such as conditions,
  * logical operators,aggregate functions, file name, fields group by fields, order by
@@ -10,52 +9,90 @@ import java.util.Map;
  * */
 public class QueryParameter {
 
-	public String getFile() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	private String file;
+	private String baseQuery;
+	private List<Restriction> restrictions = new ArrayList<Restriction>();
+	private List<String> fields = new ArrayList<String>();
+	private List<String> logicalOperators = new  ArrayList<String>();
+	private List<String> orderByFields = new ArrayList<String>();
+	private List<String> groupByFields = new ArrayList<String>();
+	private List<AggregateFunction> aggregateFunctions = new ArrayList<AggregateFunction>();
+	private String QUERY_TYPE;
 
-	public List<String> getFields() {
-		// TODO Auto-generated method stub
-		return null;
+	
+	
+	public String getFileName() {
+		return file;
 	}
-
-	public List<Restriction> getRestrictions() {
-		// TODO Auto-generated method stub
-		return null;
+	
+	public void setFileName(final String file) {
+		this.file=file;
 	}
 
 	public String getBaseQuery() {
-		// TODO Auto-generated method stub
-		return null;
+		return baseQuery;
+	}
+	
+	public void setBaseQuery(final String baseQuery) {
+		this.baseQuery=baseQuery;
 	}
 
-	public List<AggregateFunction> getAggregateFunctions() {
-		// TODO Auto-generated method stub
-		return null;
+	public List<Restriction> getRestrictions() {
+		return restrictions;
+	}
+	
+	public void setRestrictions(final List<Restriction> restrictions) {
+		this.restrictions=restrictions;
 	}
 
 	public List<String> getLogicalOperators() {
-		// TODO Auto-generated method stub
-		return null;
+		return logicalOperators;
+	}
+	
+	public void setLogicalOperators(final List<String> logicalOperators) {
+		this.logicalOperators=logicalOperators;
+	}	
+	
+
+	public List<String> getFields() {
+		return fields;
+	}
+	
+	public void setFields(final List<String> fields) {
+		this.fields=fields;
+	}
+
+	public List<AggregateFunction> getAggregateFunctions() {
+		return aggregateFunctions;
+	}
+	
+	public void setAggregateFunctions(final List<AggregateFunction> aggregateFunctions) {
+		this.aggregateFunctions=aggregateFunctions;
 	}
 
 	public List<String> getGroupByFields() {
-		// TODO Auto-generated method stub
-		return null;
+		return groupByFields;
+	}
+	
+	public void setGroupByFields(final List<String> groupFields) {
+		this.groupByFields=groupFields;
 	}
 
 	public List<String> getOrderByFields() {
-		// TODO Auto-generated method stub
-		return null;
+		return orderByFields;
+	}
+	
+	public void setOrderByFields(final List<String> orderByFields) {
+		this.orderByFields=orderByFields;
 	}
 
 	public String getQUERY_TYPE() {
-		// TODO Auto-generated method stub
-		return null;
+		return QUERY_TYPE;
 	}
-
-		
+	
+	public void setQUERY_TYPE(String QUERY_TYPE) {
+		this.QUERY_TYPE=QUERY_TYPE;
+	}
 
 	
 }
