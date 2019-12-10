@@ -2,9 +2,16 @@ package com.stackroute.datamunger.query;
 
 import java.util.HashMap;
 
+import com.stackroute.datamunger.query.parser.QueryParameter;
+import com.stackroute.datamunger.query.parser.QueryParser;
+import com.stackroute.datamunger.reader.CsvQueryProcessor;
+
 
 public class Query {
 
+	public Query() {
+		
+	}
 	/*
 	 * This method will: 
 	 * 1.parse the query and populate the QueryParameter object
@@ -18,11 +25,16 @@ public class Query {
 	
 		/* instantiate QueryParser class */
 		
+		QueryParser queryParser = new QueryParser();
+				
 		/*
 		 * call parseQuery() method of the class by passing the queryString which will
 		 * return object of QueryParameter
 		 */
 		
+		QueryParameter queryParameter = new QueryParameter();
+		
+		queryParameter = queryParser.parseQuery(queryString);
 		
 		/*
 		 * Check for Type of Query based on the QueryParameter object. In this
@@ -31,6 +43,8 @@ public class Query {
 		 * or group by clause
 		 */
 		
+		CsvQueryProcessor csvQueryProcessor = new CsvQueryProcessor();
+		
 		
 		/*
 		 * call the getResultSet() method of CsvQueryProcessor class by passing the
@@ -38,9 +52,9 @@ public class Query {
 		 * which is a HashMap
 		 */
 		
-		
+		HashMap dataSet = csvQueryProcessor.getResultSet(queryParameter);
 	
-		return null;
+		return dataSet;
 	}
-
 }
+
